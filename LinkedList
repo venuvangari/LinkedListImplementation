@@ -1,0 +1,113 @@
+#include <iostream>
+
+using namespace std;
+
+// Define a structure to represent a sparse matrix element
+struct Element {
+    int r;
+    int c;
+    int val;
+    Element* next;
+};
+
+// Define a structure to represent a sparse matrix row
+struct Row {
+    int rowNum;
+    Element* head;
+    Row* next;
+};
+
+// Define a structure to represent a sparse matrix
+struct SparseMatrix {
+    int rs;
+    int cs;
+    Row* head;
+};
+
+// Function to initialize a sparse matrix from a given 2D array
+SparseMatrix initializeSparseMatrix(int arr[][5], int rs, int cs) {
+    SparseMatrix matrix;
+    matrix.rs = rs;
+    matrix.cs = cs;
+    matrix.head = nullptr;
+
+    for (int i = 0; i < rs; ++i) {
+        Row* currentRow = nullptr;
+        Element* currentElement = nullptr;
+
+        for (int j = 0; j < cs; ++j) {
+            if (arr[i][j] != 0) {
+                Element* newElement = new Element{ i, j, arr[i][j], nullptr };
+                if (!currentRow) {
+                    currentRow = new Row{ i, newElement, nullptr };
+                    matrix.head = currentRow;
+                }
+                else {
+                    currentElement->next = newElement;
+                }
+                currentElement = newElement;
+            }
+        }
+    }
+
+    return matrix;
+}
+
+// Function to display a sparse matrix
+void displaySparseMatrix(const SparseMatrix& matrix) {
+    Row* currentRow = matrix.head;
+    while (currentRow) {
+        Element* currentElement = currentRow->head;
+        for (int j = 0; j < matrix.cs; ++j) {
+            if (currentElement && currentElement->c == j) {
+                cout << currentElement->val << " ";
+                currentElement = currentElement->next;
+            }
+            else {
+                cout << "0 ";
+            }
+        }
+        cout << endl;
+        currentRow = currentRow->next;
+    }
+}
+
+int main() {
+    int arr[4][5] = {
+        {0, 0, 3, 0, 4},
+        {0, 0, 5, 7, 0},
+        {0, 0, 0, 0, 0},
+        {0, 2, 6, 0, 0}
+    };
+
+    // Initialize a sparse matrix
+    SparseMatrix matrix = initializeSparseMatrix(arr, 4, 5);
+
+    // Display the original and sparse matrices
+    cout << "Original Matrix:" << endl;
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 5; ++j) {
+            cout << arr[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    cout << "\nSparse Matrix:" << endl;
+    displaySparseMatrix(matrix);
+
+    // Deallocate memory
+    Row* currentRow = matrix.head;
+    while (currentRow) {
+        Element* nextElement = currentRow->head;
+        while (nextElement) {
+            Element* temp = nextElement;
+            nextElement = nextElement->next;
+            delete temp;
+        }
+        Row* tempRow = currentRow;
+        currentRow = currentRow->next;
+        delete tempRow;
+    }
+
+    return 0;
+}
